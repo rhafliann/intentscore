@@ -20,103 +20,81 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int HOME_REQUEST_CODE = 1;
-    private static final int AWAY_REQUEST_CODE = 2;
+    ImageView homeImage, awayImage;
+    EditText homeText, awayText;
+    Uri imageUri1;
+    Uri imageUri2;
+    Bitmap bitmap1;
+    Bitmap bitmap2;
     private static final String TAG = MainActivity.class.getCanonicalName();
-
-    private String hometeam;
-    private String awayteam;
-    private EditText homeTeamInput;
-    private EditText awayTeamInput;
-    private ImageView homeLogo;
-    private ImageView awayLogo;
-    private Button buttonTeam;
-    private Uri homeImg;
-    private  Uri awayImg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        homeTeamInput = findViewById(R.id.home_team);
-        awayTeamInput = findViewById(R.id.away_team);
-        homeLogo = findViewById(R.id.home_logo);
-        awayLogo = findViewById(R.id.away_logo);
-        buttonTeam = findViewById(R.id.btn_team);
+        homeImage = findViewById(R.id.home_logo);
+        awayImage = findViewById(R.id.away_logo);
+        homeText = findViewById(R.id.home_team);
+        awayText = findViewById(R.id.away_team);
 
-        buttonTeam.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //intent
-                hometeam = homeTeamInput.getText().toString();
-                awayteam = awayTeamInput.getText().toString();
-                Intent intent = new Intent(MainActivity.this, MatchActivity.class);
-                intent.putExtra("namahome", hometeam);
-                intent.putExtra("namaaway", awayteam);
-                intent.putExtra("homeImg", homeImg.toString());
-                intent.putExtra("awayImg", awayImg.toString());
-                startActivity(intent);
-            }
-        });
+    }
 
-        homeLogo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), HOME_REQUEST_CODE);
-            }
-        });
+    public void handleHomeLogo(View view) {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, 1);
+    }
 
-        awayLogo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), AWAY_REQUEST_CODE);
-            }
-        });
 
-        //TODO
-        //Fitur Main Activity
-        //1. Validasi Input Home Team
-        //2. Validasi Input Away Team
-        //3. Ganti Logo Home Team
-        //4. Ganti Logo Away Team
-        //5. Next Button Pindah Ke MatchActivity
+    public void handleAwayLogo(View view) {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, 2);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == RESULT_CANCELED){
-            Log.d(TAG, "Pilih gambar dicancel");
+        if (resultCode == RESULT_CANCELED) {
             return;
         }
-        else if(requestCode == HOME_REQUEST_CODE){
-            if(data != null){
+        if (requestCode == 1) {
+            if (data != null) {
                 try {
-                    Uri imageUri = data.getData();
-                    homeImg = imageUri;
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                    homeLogo.setImageBitmap(bitmap);
+                    imageUri1 = data.getData();
+                    bitmap1 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri1);
+                    homeImage.setImageBitmap(bitmap1);
+                } catch (IOException e) {
+                    Toast.makeText(this, "Can't Load Image", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, e.getMessage());
                 }
-                catch (IOException error){
-                    Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, error.getMessage());
+            }
+        } else if (requestCode == 2) {
+            if (data != null) {
+                try {
+                    imageUri2 = data.getData();
+                    bitmap2 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri2);
+                    awayImage.setImageBitmap(bitmap2);
+                } catch (IOException e) {
+                    Toast.makeText(this, "Can't Load Image", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, e.getMessage());
                 }
             }
         }
-        else if(requestCode == AWAY_REQUEST_CODE){
-            if(data != null){
-                try {
-                    Uri imageUri = data.getData();
-                    awayImg = imageUri;
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                    awayLogo.setImageBitmap(bitmap);
-                }
-                catch (IOException error){
-                    Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, error.getMessage());
-                }
-            }
+    }
+    public void HandleSubmit(View view) {
+        String inputHome = homeText.getText().toString();
+        String inputAway = awayText.getText().toString();
+        if (!inputAway.equals("") && !inputHome.equals("") && bitmap1 != null && bitmap2 != null) {
+            Intent intent = new Intent(this, MatchActivity.class);
+            intent.putExtra("inputHome", inputHome);
+            intent.putExtra("inputAway", inputAway);
+            intent.putExtra("logoHome", imageUri1.toString());
+            intent.putExtra("logoAway", imageUri2.toString());
+
+            startActivity(intent);
+
+        }else {
+            Toast.makeText(this, "Silahkan Input Data!", Toast.LENGTH_SHORT).show();
         }
     }
 }

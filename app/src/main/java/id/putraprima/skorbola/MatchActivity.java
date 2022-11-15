@@ -6,95 +6,115 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 public class MatchActivity extends AppCompatActivity {
 
-    private String hometeam;
-    private String awayteam;
-    private String winner;
-    private int homescore;
-    private int awayscore;
-    private TextView scoreHome;
-    private TextView scoreAway;
-    private TextView homeText;
-    private TextView awayText;
-    private ImageView homeLogo;
-    private ImageView awayLogo;
-    private Button addHome;
-    private Button addAway;
-    private Button cekResult;
+    TextView homeName;
+    TextView awayName;
+    TextView awayScore;
+    TextView homeScore;
+    String homeTeam;
+    String awayTeam;
+    Uri uri1;
+    Uri uri2;
+    ImageView homeLogo;
+    ImageView awayLogo;
+    Bitmap bitmap1;
+    Bitmap bitmap2;
+    int scoreHome = 0;
+    int scoreAway = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match);
-        homeText = findViewById(R.id.txt_home);
-        awayText = findViewById(R.id.txt_away);
-        scoreHome = findViewById(R.id.score_home);
-        scoreAway = findViewById(R.id.score_away);
+
+        homeName = findViewById(R.id.txt_home);
+        awayName = findViewById(R.id.txt_away);
         homeLogo = findViewById(R.id.home_logo);
         awayLogo = findViewById(R.id.away_logo);
-        addHome = findViewById(R.id.btn_add_home);
-        addAway = findViewById(R.id.btn_add_away);
-        cekResult = findViewById(R.id.btn_result);
+        awayScore = findViewById(R.id.score_away);
+        homeScore = findViewById(R.id.score_home);
 
-        homescore = 0;
-        awayscore = 0;
-        scoreHome.setText(String.valueOf(homescore));
-        scoreAway.setText(String.valueOf(awayscore));
+        Bundle extras = getIntent().getExtras();
+        homeTeam = extras.getString("inputHome");
+        awayTeam = extras.getString("inputAway");
 
-        Bundle bundle = getIntent().getExtras();
-        hometeam = bundle.getString("namahome");
-        homeText.setText(hometeam);
-        awayteam = bundle.getString("namaaway");
-        awayText.setText(awayteam);
-        homeLogo.setImageURI(Uri.parse(bundle.getString("homeImg")));
-        awayLogo.setImageURI(Uri.parse(bundle.getString("awayImg")));
+        if(extras != null){
+            uri1 = Uri.parse(extras.getString("logoHome"));
+            uri2 = Uri.parse(extras.getString("logoAway"));
+            bitmap1 = null;
+            bitmap2 = null;
 
-        addHome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                homescore += 1;
-                scoreHome.setText(String.valueOf(homescore));
+            try{
+                bitmap1 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri1);
+                bitmap2 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri2);
+            }catch(IOException e){
+                e.printStackTrace();
             }
-        });
 
-        addAway.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                awayscore += 1;
-                scoreAway.setText(String.valueOf(awayscore));
-            }
-        });
-
-        cekResult.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                winner = "empty";
-                if(homescore > awayscore){
-                    winner = hometeam;
-                }
-                else if (homescore == awayscore){
-                    winner = "draw";
-                }
-                else {
-                    winner = awayteam;
-                }
-
-                Intent intent = new Intent(MatchActivity.this, ResultActivity.class);
-                intent.putExtra("winner", winner);
-                startActivity(intent);
-            }
-        });
+            homeName.setText(homeTeam);
+            awayName.setText(awayTeam);
+            homeLogo.setImageBitmap(bitmap1);
+            awayLogo.setImageBitmap(bitmap2);
+        }
+    }
 
 
-        //TODO
-        //1.Menampilkan detail match sesuai data dari main activity
-        //2.Tombol add score menambahkan satu angka dari angka 0, setiap kali di tekan
-        //3.Tombol Cek Result menghitung pemenang dari kedua tim dan mengirim nama pemenang ke ResultActivity, jika seri di kirim text "Draw"
+    public void handleHome(View view){
+        scoreHome = scoreHome + 1;
+        homeScore.setText(String.valueOf(scoreHome));
+    }
+
+    public void handleHome2(View view){
+        scoreHome = scoreHome + 2;
+        homeScore.setText(String.valueOf(scoreHome));
+    }
+
+    public void handleHome3(View view){
+        scoreHome = scoreHome + 3;
+        homeScore.setText(String.valueOf(scoreHome));
+    }
+
+    public void handleHome4(View view){
+        scoreHome = 0;
+        homeScore.setText(String.valueOf(scoreHome));
+    }
+
+    public void handleAway(View view){
+        scoreAway = scoreAway + 1;
+        awayScore.setText(String.valueOf(scoreAway));
+    }
+
+    public void handleAway2(View view){
+        scoreAway = scoreAway + 2;
+        awayScore.setText(String.valueOf(scoreAway));
+    }
+
+    public void handleAway3(View view){
+        scoreAway = scoreAway + 3;
+        awayScore.setText(String.valueOf(scoreAway));
+    }
+
+    public void handleAway4(View view){
+        scoreAway = 0;
+        awayScore.setText(String.valueOf(scoreAway));
+    }
+
+    public void hasil(View view){
+        Intent intent = new Intent(this, ResultActivity.class);
+        intent.putExtra("homeScore", scoreHome);
+        intent.putExtra("awayScore", scoreAway);
+        intent.putExtra("homeName", homeTeam);
+        intent.putExtra("awayName", awayTeam);
+
+        startActivity(intent);
     }
 }
